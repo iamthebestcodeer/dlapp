@@ -8,7 +8,7 @@
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="DL App"
-        Width="500" Height="350"
+        Width="800" Height="500"
         WindowStartupLocation="CenterScreen"
         CanResize="False"
         ExtendClientAreaToDecorationsHint="True">
@@ -18,62 +18,109 @@
     </Design.DataContext>
 
     <Panel>
-        <Grid RowDefinitions="Auto, *, Auto" Margin="30">
-            <!-- Header -->
-            <TextBlock Text="YouTube DL" 
-                       FontSize="24" 
-                       FontWeight="SemiBold" 
-                       HorizontalAlignment="Center" 
-                       Margin="0,10,0,20"/>
-            
-            <!-- Content -->
-            <StackPanel Grid.Row="1" Spacing="15" VerticalAlignment="Center">
-                <TextBox Text="{Binding Url}" 
-                         Watermark="Paste YouTube URL here..." 
-                         UseFloatingWatermark="False"
-                         IsEnabled="{Binding !IsBusy}"/>
+        <Panel.Background>
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Offset="0" Color="#0F0F12"/>
+                <GradientStop Offset="1" Color="#1B1B22"/>
+            </LinearGradientBrush>
+        </Panel.Background>
 
-                <Grid ColumnDefinitions="*, Auto">
-                    <TextBox Text="{Binding SavePath}" 
-                             IsReadOnly="True" 
-                             Watermark="Save folder..."
-                             IsEnabled="{Binding !IsBusy}"/>
-                    <Button Grid.Column="1" 
-                            Content="..." 
-                            Command="{Binding SelectSavePathCommand}"
-                            Margin="10,0,0,0"
-                            IsEnabled="{Binding !IsBusy}"/>
+        <Grid ColumnDefinitions="250,*">
+            
+            <!-- Left Panel: Branding -->
+            <Border Grid.Column="0" Background="#08080A" BorderBrush="#222222" BorderThickness="0,0,1,0">
+                <Grid RowDefinitions="*,Auto" Margin="30">
+                    <StackPanel VerticalAlignment="Center" Spacing="0">
+                        <TextBlock Text="YOUTUBE" 
+                                   FontSize="28" 
+                                   FontWeight="Heavy" 
+                                   Foreground="White"
+                                   LetterSpacing="2"/>
+                        <TextBlock Text="DL" 
+                                   FontSize="72" 
+                                   FontWeight="Black" 
+                                   Foreground="#CCFF00"
+                                   LineHeight="60"
+                                   Margin="-4,-10,0,0"/>
+                        <TextBlock Text="APP" 
+                                   FontSize="72" 
+                                   FontWeight="Black" 
+                                   Foreground="#333333"
+                                   LineHeight="60"
+                                   Margin="-4,-20,0,0"/>
+                    </StackPanel>
+                    
+                    <TextBlock Grid.Row="1" 
+                               Text="v1.0.0" 
+                               FontSize="12" 
+                               Foreground="#444444"
+                               FontFamily="Consolas"/>
                 </Grid>
-                
-                <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
-                    <RadioButton GroupName="Format" Content="Best Video + Audio" 
-                                 IsChecked="{Binding !IsAudioOnly}"
-                                 IsEnabled="{Binding !IsBusy}"/>
-                    <RadioButton GroupName="Format" Content="Audio Only (MP3)" 
-                                 IsChecked="{Binding IsAudioOnly}"
-                                 IsEnabled="{Binding !IsBusy}"/>
-                </StackPanel>
-                
-                <Button Content="Download" 
-                        Command="{Binding DownloadCommand}"
-                        HorizontalAlignment="Stretch" 
-                        HorizontalContentAlignment="Center"
-                        IsEnabled="{Binding !IsBusy}"/>
-            </StackPanel>
-            
-            <!-- Status & Progress -->
-            <StackPanel Grid.Row="2" Spacing="10" Margin="0,20,0,0">
-                <ProgressBar Value="{Binding ProgressValue}" 
-                             Maximum="100" 
-                             Height="4"
-                             IsVisible="{Binding IsBusy}"/>
+            </Border>
 
-                <TextBlock Text="{Binding StatusMessage}" 
-                           FontSize="12" 
-                           Opacity="0.7" 
-                           HorizontalAlignment="Center"
-                           TextTrimming="CharacterEllipsis"/>
-            </StackPanel>
+            <!-- Right Panel: Controls -->
+            <Grid Grid.Column="1" RowDefinitions="*,Auto" Margin="40">
+                <StackPanel Spacing="20" VerticalAlignment="Center">
+                    
+                    <!-- URL Input -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="TARGET URL" FontSize="10" FontWeight="Bold" Foreground="#666666" LetterSpacing="1"/>
+                        <TextBox Text="{Binding Url}" 
+                                 Watermark="https://youtube.com/watch?v=..." 
+                                 UseFloatingWatermark="False"
+                                 IsEnabled="{Binding !IsBusy}"/>
+                    </StackPanel>
+
+                    <!-- Save Path Input -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="OUTPUT DIRECTORY" FontSize="10" FontWeight="Bold" Foreground="#666666" LetterSpacing="1"/>
+                        <Grid ColumnDefinitions="*, Auto">
+                            <TextBox Text="{Binding SavePath}" 
+                                     IsReadOnly="True" 
+                                     Watermark="Select folder..."
+                                     IsEnabled="{Binding !IsBusy}"/>
+                            <Button Grid.Column="1" 
+                                    Classes="secondary"
+                                    Content="..." 
+                                    Command="{Binding SelectSavePathCommand}"
+                                    Margin="10,0,0,0"
+                                    IsEnabled="{Binding !IsBusy}"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Format Selection -->
+                    <StackPanel Orientation="Horizontal" Spacing="20" Margin="0,10">
+                        <RadioButton GroupName="Format" Content="VIDEO + AUDIO" 
+                                     IsChecked="{Binding !IsAudioOnly}"
+                                     IsEnabled="{Binding !IsBusy}"/>
+                        <RadioButton GroupName="Format" Content="AUDIO ONLY" 
+                                     IsChecked="{Binding IsAudioOnly}"
+                                     IsEnabled="{Binding !IsBusy}"/>
+                    </StackPanel>
+
+                    <!-- Action Button -->
+                    <Button Classes="primary"
+                            Content="INITIATE DOWNLOAD" 
+                            Command="{Binding DownloadCommand}"
+                            HorizontalAlignment="Stretch" 
+                            HorizontalContentAlignment="Center"
+                            IsEnabled="{Binding !IsBusy}"/>
+                </StackPanel>
+
+                <!-- Status Overlay / Bottom Bar -->
+                <StackPanel Grid.Row="1" Spacing="10" VerticalAlignment="Bottom">
+                    <ProgressBar Value="{Binding ProgressValue}" 
+                                 Maximum="100" 
+                                 Height="2"
+                                 IsVisible="{Binding IsBusy}"/>
+                    
+                    <TextBlock Text="{Binding StatusMessage}" 
+                               FontSize="11" 
+                               Foreground="#888888" 
+                               HorizontalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+            </Grid>
         </Grid>
     </Panel>
 </Window>

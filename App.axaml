@@ -11,5 +11,85 @@
   
     <Application.Styles>
         <FluentTheme />
+        
+        <!-- Global Window Style -->
+        <Style Selector="Window">
+            <Setter Property="FontFamily" Value="Bahnschrift, Segoe UI, sans-serif"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+
+        <!-- Primary Button Style -->
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#CCFF00"/>
+            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="FontWeight" Value="Heavy"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" Easing="CircularEaseOut"/>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#D4FF33"/>
+            <Setter Property="RenderTransform" Value="scale(1.02)"/>
+        </Style>
+        <Style Selector="Button.primary:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#AACC00"/>
+            <Setter Property="RenderTransform" Value="scale(0.98)"/>
+        </Style>
+        
+        <!-- Secondary/Icon Button Style -->
+        <Style Selector="Button.secondary">
+            <Setter Property="Background" Value="#2A2A2A"/>
+            <Setter Property="Foreground" Value="#CCFF00"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#333333"/>
+        </Style>
+        <Style Selector="Button.secondary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#333333"/>
+            <Setter Property="BorderBrush" Value="#CCFF00"/>
+        </Style>
+
+        <!-- TextBox Style -->
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#1A1A1A"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="CaretBrush" Value="#CCFF00"/>
+            <Setter Property="BorderBrush" Value="#333333"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="FontFamily" Value="Consolas, Monospace"/>
+        </Style>
+        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="#CCFF00"/>
+            <Setter Property="Background" Value="#1A1A1A"/>
+        </Style>
+        <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+             <Setter Property="BorderBrush" Value="#555555"/>
+             <Setter Property="Background" Value="#1A1A1A"/>
+        </Style>
+
+        <!-- RadioButton Style -->
+        <Style Selector="RadioButton">
+            <Setter Property="Foreground" Value="#AAAAAA"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,15,0"/>
+        </Style>
+        <Style Selector="RadioButton:checked">
+            <Setter Property="Foreground" Value="#CCFF00"/>
+        </Style>
+        
+        <!-- ProgressBar -->
+        <Style Selector="ProgressBar">
+            <Setter Property="Foreground" Value="#CCFF00"/>
+            <Setter Property="Background" Value="#333333"/>
+        </Style>
     </Application.Styles>
 </Application>
