@@ -102,7 +102,7 @@ namespace dlapp.Services
             catch { /* Ignore update errors if offline or fails */ }
         }
 
-        public async Task DownloadVideoAsync(string url, string savePath, bool audioOnly, IProgress<string> outputCallback, IProgress<double> progressCallback)
+        public async Task DownloadVideoAsync(string url, string savePath, bool audioOnly, int? maxVideoHeight, string containerFormat, IProgress<string> outputCallback, IProgress<double> progressCallback)
         {
             if (!IsReady) throw new InvalidOperationException("Dependencies not ready.");
 
@@ -112,9 +112,27 @@ namespace dlapp.Services
             // Force ffmpeg location just in case it's not in PATH (it's in current dir, but explicit is safer)
             string ffmpegArg = $"--ffmpeg-location \"{_ffmpegPath}\"";
 
-            var args = audioOnly
-                ? $"{ffmpegArg} -x --audio-format mp3 --progress-template \"%(progress._percent_str)s\" -o \"{outputTemplate}\" \"{url}\""
-                : $"{ffmpegArg} --progress-template \"%(progress._percent_str)s\" -o \"{outputTemplate}\" \"{url}\"";
+            string args;
+            if (audioOnly)
+            {
+                // Audio Only: Extract audio and convert to selected format
+                args = $"{ffmpegArg} -x --audio-format {containerFormat} --progress-template \"%(progress._percent_str)s\" -o \"{outputTemplate}\" \"{url}\"";
+            }
+            else
+            {
+                // Video Mode
+                string formatArg = "";
+                if (maxVideoHeight.HasValue)
+                {
+                    // Limit resolution
+                    formatArg = $"-f \"bestvideo[height<={maxVideoHeight.Value}]+bestaudio/best[height<={maxVideoHeight.Value}]\"";
+                }
+
+                // Merge output format to ensure container
+                string mergeArg = $"--merge-output-format {containerFormat}";
+
+                args = $"{ffmpegArg} {formatArg} {mergeArg} --progress-template \"%(progress._percent_str)s\" -o \"{outputTemplate}\" \"{url}\"";
+            }
 
             var psi = new ProcessStartInfo
             {

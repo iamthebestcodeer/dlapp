@@ -2,6 +2,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using dlapp.Services;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace dlapp.ViewModels;
@@ -19,6 +21,29 @@ public partial class MainWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _isAudioOnly;
+
+    public List<string> Resolutions { get; } = new()
+    {
+        "Best",
+        "2160p (4K)",
+        "1440p (2K)",
+        "1080p",
+        "720p",
+        "480p",
+        "360p"
+    };
+
+    public List<string> VideoFormats { get; } = new() { "mp4", "mkv", "webm" };
+    public List<string> AudioFormats { get; } = new() { "mp3", "m4a", "wav" };
+
+    [ObservableProperty]
+    private string _selectedResolution = "Best";
+
+    [ObservableProperty]
+    private string _selectedVideoFormat = "mp4";
+
+    [ObservableProperty]
+    private string _selectedAudioFormat = "mp3";
 
     [ObservableProperty]
     private string _statusMessage = "Initializing...";
@@ -95,7 +120,16 @@ public partial class MainWindowViewModel : ViewModelBase
 
         try
         {
-            await _ytDlpService.DownloadVideoAsync(Url, SavePath, IsAudioOnly, outputProgress, valueProgress);
+            int? maxHeight = null;
+            if (!IsAudioOnly && SelectedResolution != "Best")
+            {
+                var digits = new string(SelectedResolution.TakeWhile(char.IsDigit).ToArray());
+                if (int.TryParse(digits, out int h)) maxHeight = h;
+            }
+
+            string container = IsAudioOnly ? SelectedAudioFormat : SelectedVideoFormat;
+
+            await _ytDlpService.DownloadVideoAsync(Url, SavePath, IsAudioOnly, maxHeight, container, outputProgress, valueProgress);
             StatusMessage = "Download complete!";
             ProgressValue = 100;
         }

@@ -41,7 +41,7 @@ The project follows the **MVVM (Model-View-ViewModel)** architectural pattern, u
 - **Views**: Located in `Views/`. These are `.axaml` files (and corresponding `.cs` code-behinds) defining the UI structure.
 - **ViewModels**: Located in `ViewModels/`. These handle the presentation logic and state.
 - **Models**: Located in `Models/`. Domain objects and business logic.
-- **Services**: Located in `Services/`. Handles external interactions and business logic (e.g., `YtDlpService` for managing yt-dlp binaries and execution).
+- **Services**: Located in `Services/`. Handles external interactions and business logic (e.g., `YtDlpService` for managing yt-dlp binaries and execution, supporting resolution limits and format selection).
 
 ## External Binaries
 - The application manages `yt-dlp.exe` and `ffmpeg.exe` automatically.
