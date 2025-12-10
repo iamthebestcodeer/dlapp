@@ -7,6 +7,9 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build ${{ matrix.rid }}
@@ -35,8 +38,12 @@ jobs:
       run: |
         dotnet publish dlapp.csproj -c Release -r ${{ matrix.rid }} --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o release/${{ matrix.rid }}
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       with:
-        name: dlapp-${{ matrix.rid }}
-        path: release/${{ matrix.rid }}/dlapp${{ matrix.suffix }}
+        tag_name: latest
+        name: Latest Build
+        draft: false
+        prerelease: false
+        files: release/${{ matrix.rid }}/dlapp${{ matrix.suffix }}
