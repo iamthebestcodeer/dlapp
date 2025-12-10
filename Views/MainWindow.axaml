@@ -3,18 +3,77 @@
         xmlns:vm="using:dlapp.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="350"
         x:Class="dlapp.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="dlapp">
+        Title="DL App"
+        Width="500" Height="350"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        ExtendClientAreaToDecorationsHint="True">
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Panel>
+        <Grid RowDefinitions="Auto, *, Auto" Margin="30">
+            <!-- Header -->
+            <TextBlock Text="YouTube DL" 
+                       FontSize="24" 
+                       FontWeight="SemiBold" 
+                       HorizontalAlignment="Center" 
+                       Margin="0,10,0,20"/>
+            
+            <!-- Content -->
+            <StackPanel Grid.Row="1" Spacing="15" VerticalAlignment="Center">
+                <TextBox Text="{Binding Url}" 
+                         Watermark="Paste YouTube URL here..." 
+                         UseFloatingWatermark="False"
+                         IsEnabled="{Binding !IsBusy}"/>
 
+                <Grid ColumnDefinitions="*, Auto">
+                    <TextBox Text="{Binding SavePath}" 
+                             IsReadOnly="True" 
+                             Watermark="Save folder..."
+                             IsEnabled="{Binding !IsBusy}"/>
+                    <Button Grid.Column="1" 
+                            Content="..." 
+                            Command="{Binding SelectSavePathCommand}"
+                            Margin="10,0,0,0"
+                            IsEnabled="{Binding !IsBusy}"/>
+                </Grid>
+                
+                <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
+                    <RadioButton GroupName="Format" Content="Best Video + Audio" 
+                                 IsChecked="{Binding !IsAudioOnly}"
+                                 IsEnabled="{Binding !IsBusy}"/>
+                    <RadioButton GroupName="Format" Content="Audio Only (MP3)" 
+                                 IsChecked="{Binding IsAudioOnly}"
+                                 IsEnabled="{Binding !IsBusy}"/>
+                </StackPanel>
+                
+                <Button Content="Download" 
+                        Command="{Binding DownloadCommand}"
+                        HorizontalAlignment="Stretch" 
+                        HorizontalContentAlignment="Center"
+                        IsEnabled="{Binding !IsBusy}"/>
+            </StackPanel>
+            
+            <!-- Status & Progress -->
+            <StackPanel Grid.Row="2" Spacing="10" Margin="0,20,0,0">
+                <ProgressBar Value="{Binding ProgressValue}" 
+                             Maximum="100" 
+                             Height="4"
+                             IsVisible="{Binding IsBusy}"/>
+
+                <TextBlock Text="{Binding StatusMessage}" 
+                           FontSize="12" 
+                           Opacity="0.7" 
+                           HorizontalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+        </Grid>
+    </Panel>
 </Window>

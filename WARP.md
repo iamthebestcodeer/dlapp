@@ -31,6 +31,11 @@ The project follows the **MVVM (Model-View-ViewModel)** architectural pattern, u
 - **Views**: Located in `Views/`. These are `.axaml` files (and corresponding `.cs` code-behinds) defining the UI structure.
 - **ViewModels**: Located in `ViewModels/`. These handle the presentation logic and state.
 - **Models**: Located in `Models/`. Domain objects and business logic.
+- **Services**: Located in `Services/`. Handles external interactions and business logic (e.g., `YtDlpService` for managing yt-dlp binaries and execution).
+
+## External Binaries
+- The application manages `yt-dlp.exe` and `ffmpeg.exe` automatically.
+- `YtDlpService` downloads these binaries on first run and checks for `yt-dlp` updates.
 
 ## MVVM Pattern
 - **Base Class**: All ViewModels should inherit from `ViewModelBase`, which inherits from `ObservableObject` (CommunityToolkit.Mvvm).
@@ -42,6 +47,9 @@ The project follows the **MVVM (Model-View-ViewModel)** architectural pattern, u
 Currently, the project does not use a Dependency Injection (DI) container.
 - ViewModels are instantiated manually (e.g., in `App.axaml.cs`).
 - Services should be passed via constructors if/when introduced.
+
+## UI Interaction
+- **Dialogs/Pickers**: Since there is no Dialog Service, ViewModels expose `Func` or `Action` properties (e.g., `ShowOpenFolderDialog`) that the View assigns (typically in `OnDataContextChanged` or code-behind) to handle UI-specific operations like file/folder pickers using `StorageProvider`.
 
 # Development Guidelines
 - **Avalonia & CommunityToolkit**: Note that `App.axaml.cs` contains logic to disable Avalonia's native data annotation validation (`DisableAvaloniaDataAnnotationValidation`) to avoid conflicts with CommunityToolkit's validation.
