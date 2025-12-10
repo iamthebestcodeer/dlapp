@@ -1,0 +1,42 @@
+name: Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ${{ matrix.rid }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - rid: win-x64
+            suffix: .exe
+          - rid: win-arm64
+            suffix: .exe
+          - rid: linux-x64
+            suffix: ''
+          - rid: linux-arm64
+            suffix: ''
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Publish
+      run: |
+        dotnet publish dlapp.csproj -c Release -r ${{ matrix.rid }} --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o release/${{ matrix.rid }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dlapp-${{ matrix.rid }}
+        path: release/${{ matrix.rid }}/dlapp${{ matrix.suffix }}

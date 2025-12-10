@@ -23,6 +23,14 @@ The project follows the **MVVM (Model-View-ViewModel)** architectural pattern, u
 ### Formatting
 - **Format Code**: `dotnet format`
 
+# CI/CD
+- **GitHub Actions**: A workflow is configured in `.github/workflows/build.yml` to build the application for:
+  - Windows x64
+  - Windows ARM64
+  - Linux x64
+  - Linux ARM64
+- Artifacts are uploaded as `dlapp-<rid>`.
+
 # Architecture & Structure
 
 ## High-Level Layout
