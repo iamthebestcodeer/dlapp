@@ -29,7 +29,9 @@ The project follows the **MVVM (Model-View-ViewModel)** architectural pattern, u
   - Windows ARM64
   - Linux x64
   - Linux ARM64
-- Artifacts are uploaded as `dlapp-<rid>`.
+- The workflow follows a build-then-release pattern:
+  - **Build**: Compiles the application for all targets in parallel and uploads artifacts named `dlapp-<rid>`.
+  - **Release**: Downloads all artifacts and publishes them to the `latest` release tag.
 
 # Architecture & Structure
 
