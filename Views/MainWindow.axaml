@@ -6,12 +6,13 @@
         mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="350"
         x:Class="dlapp.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/logo.png"
         Title="DL App"
         Width="800" Height="500"
         WindowStartupLocation="CenterScreen"
-        CanResize="False"
+        CanResize="True"
         ExtendClientAreaToDecorationsHint="True">
+    
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
@@ -59,8 +60,8 @@
             </Border>
 
             <!-- Right Panel: Controls -->
-            <Grid Grid.Column="1" RowDefinitions="*,Auto" Margin="40">
-                <StackPanel Spacing="20" VerticalAlignment="Center">
+            <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto" Margin="40">
+                <StackPanel Grid.Row="0" Spacing="20">
                     
                     <!-- URL Input -->
                     <StackPanel Spacing="8">
@@ -96,6 +97,9 @@
                         <RadioButton GroupName="Format" Content="AUDIO ONLY" 
                                      IsChecked="{Binding IsAudioOnly}"
                                      IsEnabled="{Binding !IsBusy}"/>
+                        <CheckBox Content="PLAYLIST" 
+                                  IsChecked="{Binding IsPlaylist}"
+                                  IsEnabled="{Binding !IsBusy}"/>
                     </StackPanel>
 
                     <!-- Quality & Container -->
@@ -137,8 +141,39 @@
                             IsEnabled="{Binding !IsBusy}"/>
                 </StackPanel>
 
+                <!-- Log List -->
+                <Border Grid.Row="1" Margin="0,20" Background="#0A0A0A" CornerRadius="4" BorderBrush="#222" BorderThickness="1">
+                    <ListBox ItemsSource="{Binding Items}" 
+                             Background="Transparent" 
+                             Padding="5">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="30,*,Auto" Margin="0,4">
+                                    <TextBlock Text="{Binding Index}" Foreground="#444" VerticalAlignment="Center" FontFamily="Consolas"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Title}" Foreground="#DDD" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="10,0"/>
+                                    <Border Grid.Column="2" CornerRadius="3" Padding="6,2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Status}" FontSize="10" FontWeight="Bold">
+                                            <TextBlock.Styles>
+                                                <Style Selector="TextBlock[Text=Pending]">
+                                                    <Setter Property="Foreground" Value="#666"/>
+                                                </Style>
+                                                <Style Selector="TextBlock[Text=Downloading...]">
+                                                    <Setter Property="Foreground" Value="#FFCC00"/>
+                                                </Style>
+                                                <Style Selector="TextBlock[Text=Completed]">
+                                                    <Setter Property="Foreground" Value="#00FF00"/>
+                                                </Style>
+                                            </TextBlock.Styles>
+                                        </TextBlock>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+
                 <!-- Status Overlay / Bottom Bar -->
-                <StackPanel Grid.Row="1" Spacing="10" VerticalAlignment="Bottom">
+                <StackPanel Grid.Row="2" Spacing="10" VerticalAlignment="Bottom">
                     <ProgressBar Value="{Binding ProgressValue}" 
                                  Maximum="100" 
                                  Height="2"

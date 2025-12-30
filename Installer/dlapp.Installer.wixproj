@@ -1,0 +1,13 @@
+<Project Sdk="WixToolset.Sdk/4.0.4">
+  <PropertyGroup>
+    <OutputName>dlapp</OutputName>
+    <OutputType>Package</OutputType>
+    <PublishDir>..\publish\win-x64</PublishDir>
+    <DefineConstants>PublishDir=$(PublishDir)</DefineConstants>
+    <IntermediateOutputPath>obj\installer\</IntermediateOutputPath>
+    <EnableDefaultItems>false</EnableDefaultItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Product.wxs" />
+  </ItemGroup>
+</Project>

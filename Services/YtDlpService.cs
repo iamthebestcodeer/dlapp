@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -94,29 +95,117 @@ namespace dlapp.Services
                     FileName = _ytDlpPath,
                     Arguments = "-U",
                     UseShellExecute = false,
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
+                    RedirectStandardError = true
                 };
                 var p = Process.Start(psi);
-                if (p != null) await p.WaitForExitAsync();
+                if (p != null)
+                {
+                    await p.StandardError.ReadToEndAsync();
+                    await p.WaitForExitAsync();
+                }
             }
-            catch { /* Ignore update errors if offline or fails */ }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"yt-dlp update failed: {ex.Message}");
+            }
         }
 
-        public async Task DownloadVideoAsync(string url, string savePath, bool audioOnly, int? maxVideoHeight, string containerFormat, IProgress<string> outputCallback, IProgress<double> progressCallback)
+        public async Task<List<(string Index, string Title)>> GetVideoInfoAsync(string url, bool isPlaylist, System.Threading.CancellationToken cancellationToken = default)
+        {
+            if (!IsReady) throw new InvalidOperationException("Dependencies not ready.");
+
+            var items = new List<(string Index, string Title)>();
+
+            var baseInfoArgs = "--skip-download --quiet --no-warnings";
+            var psi = new ProcessStartInfo
+            {
+                FileName = _ytDlpPath,
+                // If user marked as playlist, enumerate entries; otherwise force single video info only.
+                Arguments = isPlaylist
+                    ? $"{baseInfoArgs} --flat-playlist --print \"%(playlist_index)s|%(title)s\" \"{url}\""
+                    // extra guards: cap playlist-like URLs to a single item even if yt-dlp still detects a playlist/mix
+                    : $"{baseInfoArgs} --no-playlist --playlist-items 1 --max-downloads 1 --print \"%(title)s\" \"{url}\"",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+                StandardOutputEncoding = System.Text.Encoding.UTF8
+            };
+
+            using var process = new Process { StartInfo = psi };
+            process.Start();
+
+            var errorTask = process.StandardError.ReadToEndAsync();
+
+            int counter = 1;
+            var addedSingle = false;
+            while (!process.StandardOutput.EndOfStream)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var line = await process.StandardOutput.ReadLineAsync(cancellationToken);
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                if (line.StartsWith("[", StringComparison.Ordinal)) continue;
+
+                if (isPlaylist)
+                {
+                    var parts = line.Split('|', 2);
+                    if (parts.Length == 2)
+                    {
+                        var index = parts[0].Trim();
+                        if (string.IsNullOrEmpty(index)) index = counter.ToString();
+                        items.Add((index, parts[1].Trim()));
+                    }
+                    else
+                    {
+                        items.Add((counter.ToString(), line.Trim()));
+                    }
+                    counter++;
+                }
+                else
+                {
+                    // Single video: only keep the first title to avoid showing multiple phantom entries
+                    if (!addedSingle)
+                    {
+                        items.Add(("1", line.Trim()));
+                        addedSingle = true;
+                        break;
+                    }
+                }
+            }
+
+            await process.WaitForExitAsync(cancellationToken);
+            await errorTask;
+
+            // Defensive: for non-playlist requests, we only ever want a single item.
+            // Some URLs can still emit multiple lines (e.g., mixes/feeds); collapse to the first.
+            if (!isPlaylist && items.Count > 1)
+            {
+                return new List<(string Index, string Title)> { items[0] };
+            }
+
+            return items;
+        }
+
+        public async Task DownloadVideoAsync(string url, string savePath, bool audioOnly, bool isPlaylist, int? maxVideoHeight, string containerFormat, IProgress<string> outputCallback, IProgress<double> progressCallback, System.Threading.CancellationToken cancellationToken = default)
         {
             if (!IsReady) throw new InvalidOperationException("Dependencies not ready.");
 
             // Output template to avoid weird filenames
-            string outputTemplate = "%(title)s.%(ext)s";
+            string outputTemplate = isPlaylist
+                ? "%(playlist_title)s/%(playlist_index)s - %(title)s.%(ext)s"
+                : "%(title)s.%(ext)s";
 
             // Force ffmpeg location just in case it's not in PATH (it's in current dir, but explicit is safer)
             string ffmpegArg = $"--ffmpeg-location \"{_ffmpegPath}\"";
+
+            string playlistArg = isPlaylist ? "--yes-playlist" : "--no-playlist";
 
             string args;
             if (audioOnly)
             {
                 // Audio Only: Extract audio and convert to selected format
-                args = $"{ffmpegArg} -x --audio-format {containerFormat} --progress-template \"%(progress._percent_str)s\" -o \"{outputTemplate}\" \"{url}\"";
+                args = $"{ffmpegArg} {playlistArg} -x --audio-format {containerFormat} --progress-template \"%(progress._percent_str)s\" -o \"{outputTemplate}\" \"{url}\"";
             }
             else
             {
@@ -131,7 +220,7 @@ namespace dlapp.Services
                 // Merge output format to ensure container
                 string mergeArg = $"--merge-output-format {containerFormat}";
 
-                args = $"{ffmpegArg} {formatArg} {mergeArg} --progress-template \"%(progress._percent_str)s\" -o \"{outputTemplate}\" \"{url}\"";
+                args = $"{ffmpegArg} {playlistArg} {formatArg} {mergeArg} --progress-template \"%(progress._percent_str)s\" -o \"{outputTemplate}\" \"{url}\"";
             }
 
             var psi = new ProcessStartInfo
@@ -176,7 +265,7 @@ namespace dlapp.Services
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
-            await process.WaitForExitAsync();
+            await process.WaitForExitAsync(cancellationToken);
         }
     }
 }
