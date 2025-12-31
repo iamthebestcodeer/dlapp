@@ -56,16 +56,12 @@ jobs:
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
-    - uses: actions/download-artifact@v4
-      continue-on-error: true
-
-    - name: Move artifacts to artifacts directory
-      run: |
-        mkdir -p artifacts
-        find . -maxdepth 1 -name "dlapp-*" -type f -exec mv {} artifacts/ \;
-        ls -la artifacts/
-
     - uses: actions/checkout@v4
+
+    - uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+        merge-multiple: true
 
     - name: Display structure of downloaded files
       run: ls -laR artifacts
