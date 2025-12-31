@@ -62,6 +62,8 @@ jobs:
         path: artifacts
         merge-multiple: true
 
+    - uses: actions/checkout@v4
+
     - name: Display structure of downloaded files
       run: ls -R artifacts
 
