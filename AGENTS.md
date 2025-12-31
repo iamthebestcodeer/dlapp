@@ -29,10 +29,13 @@ dotnet restore
 dotnet clean
 
 # Format code (applies editorconfig rules)
-dotnet format
+dotnet format dlapp.csproj
 
-# Publish for Windows x64
-dotnet publish dlapp.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o release/win-x64
+# Verify code formatting without changes
+dotnet format dlapp.csproj --verify-no-changes
+
+# Publish for Windows (single exe, self-contained)
+dotnet publish -c Release -o release/win-x64
 
 # Publish for Linux
 dotnet publish dlapp.csproj -c Release -r linux-x64 --self-contained -p:PublishSingleFile=true -o release/linux-x64
@@ -237,13 +240,22 @@ field!.SetValue(vm, mockService.Object);
 ```
 
 **Testing YtDlpService:**
-`IsReady` is computed from `File.Exists` checks. Use reflection to inject test paths:
+`IsReady` is computed from `File.Exists` checks. Use reflection to inject test paths. Fields are `readonly` so set them directly:
 
 ```csharp
-var pathsField = typeof(YtDlpService).GetField("_ytDlpPath", BindingFlags.NonPublic | BindingFlags.Instance);
-var ffmpegPathField = typeof(YtDlpService).GetField("_ffmpegPath", BindingFlags.NonPublic | BindingFlags.Instance);
-pathsField!.SetValue(service, testYtDlpPath);
-ffmpegPathField!.SetValue(service, testFfmpegPath);
+var ytDlpField = typeof(YtDlpService).GetField("_ytDlpPath", BindingFlags.NonPublic | BindingFlags.Instance);
+var ffmpegField = typeof(YtDlpService).GetField("_ffmpegPath", BindingFlags.NonPublic | BindingFlags.Instance);
+ytDlpField!.SetValue(service, testYtDlpPath);
+ffmpegField!.SetValue(service, testFfmpegPath);
+```
+
+**Testing Static Properties:**
+When a class uses static properties for computed paths (e.g., `AppDataRoot`), test the static property directly:
+
+```csharp
+var appDataRootProp = typeof(YtDlpService).GetProperty("AppDataRoot", BindingFlags.NonPublic | BindingFlags.Static);
+var actual = appDataRootProp!.GetValue(null)!.ToString();
+actual.Should().Be(expectedPath);
 ```
 
 **Avoid UI Tests in Headless CI:**

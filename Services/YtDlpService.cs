@@ -14,21 +14,24 @@ namespace dlapp.Services
         // Using a reliable source for ffmpeg static builds
         private const string FfmpegUrl = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip";
 
-        private readonly string _baseDir;
-        private readonly string _ytDlpPath;
-        private readonly string _ffmpegPath;
+        private static string AppDataRoot => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "dlapp"
+        );
+
+        private readonly string _ytDlpPath = Path.Combine(AppDataRoot, "yt-dlp.exe");
+        private readonly string _ffmpegPath = Path.Combine(AppDataRoot, "ffmpeg.exe");
 
         public YtDlpService()
         {
-            _baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            _ytDlpPath = Path.Combine(_baseDir, "yt-dlp.exe");
-            _ffmpegPath = Path.Combine(_baseDir, "ffmpeg.exe");
         }
 
         public bool IsReady => File.Exists(_ytDlpPath) && File.Exists(_ffmpegPath);
 
         public async Task InitializeAsync(IProgress<string> statusCallback)
         {
+            Directory.CreateDirectory(AppDataRoot);
+
             if (!File.Exists(_ytDlpPath))
             {
                 statusCallback.Report("Downloading yt-dlp...");
@@ -45,7 +48,7 @@ namespace dlapp.Services
             if (!File.Exists(_ffmpegPath))
             {
                 statusCallback.Report("Downloading ffmpeg...");
-                var zipPath = Path.Combine(_baseDir, "ffmpeg.zip");
+                var zipPath = Path.Combine(AppDataRoot, "ffmpeg.zip");
                 await DownloadFileAsync(FfmpegUrl, zipPath);
 
                 statusCallback.Report("Extracting ffmpeg...");

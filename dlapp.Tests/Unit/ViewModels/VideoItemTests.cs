@@ -37,7 +37,7 @@ public class VideoItemTests
     {
         var item = new VideoItem();
         var changedProperties = new List<string>();
-        item.PropertyChanged += (s, e) => changedProperties.Add(e.PropertyName);
+        item.PropertyChanged += (s, e) => changedProperties.Add(e.PropertyName!);
 
         item.Title = "Test Video";
 
@@ -49,7 +49,7 @@ public class VideoItemTests
     {
         var item = new VideoItem();
         var changedProperties = new List<string>();
-        item.PropertyChanged += (s, e) => changedProperties.Add(e.PropertyName);
+        item.PropertyChanged += (s, e) => changedProperties.Add(e.PropertyName!);
 
         item.Index = "1";
 

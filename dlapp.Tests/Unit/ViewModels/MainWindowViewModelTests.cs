@@ -94,7 +94,7 @@ public class MainWindowViewModelTests
     {
         var vm = CreateViewModel();
         var expectedPath = @"C:\Downloads";
-        vm.ShowOpenFolderDialog = async () => expectedPath;
+        vm.ShowOpenFolderDialog = () => Task.FromResult<string?>(expectedPath);
 
         await vm.SelectSavePathCommand.ExecuteAsync(null);
 
@@ -106,7 +106,7 @@ public class MainWindowViewModelTests
     {
         var vm = CreateViewModel();
         var originalPath = vm.SavePath;
-        vm.ShowOpenFolderDialog = async () => null;
+        vm.ShowOpenFolderDialog = () => Task.FromResult<string?>(null);
 
         await vm.SelectSavePathCommand.ExecuteAsync(null);
 
@@ -118,7 +118,7 @@ public class MainWindowViewModelTests
     {
         var vm = CreateViewModel();
         var originalPath = vm.SavePath;
-        vm.ShowOpenFolderDialog = async () => string.Empty;
+        vm.ShowOpenFolderDialog = () => Task.FromResult<string?>(string.Empty);
 
         await vm.SelectSavePathCommand.ExecuteAsync(null);
 

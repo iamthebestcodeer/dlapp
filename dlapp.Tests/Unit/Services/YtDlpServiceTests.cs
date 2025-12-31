@@ -43,6 +43,38 @@ public class YtDlpServiceTests : IDisposable
     }
 
     [Fact]
+    public void Constructor_PathsUseAppData()
+    {
+        var service = new YtDlpService();
+
+        var ytDlpPathField = typeof(YtDlpService).GetField("_ytDlpPath", BindingFlags.NonPublic | BindingFlags.Instance);
+        var ffmpegPathField = typeof(YtDlpService).GetField("_ffmpegPath", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        var ytDlpPath = ytDlpPathField!.GetValue(service)!.ToString();
+        var ffmpegPath = ffmpegPathField!.GetValue(service)!.ToString();
+
+        var appDataRoot = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+        ytDlpPath.Should().StartWith(appDataRoot);
+        ffmpegPath.Should().StartWith(appDataRoot);
+
+        ytDlpPath.Should().Contain("dlapp");
+        ffmpegPath.Should().Contain("dlapp");
+    }
+
+    [Fact]
+    public void AppDataRoot_StaticProperty_ReturnsCorrectPath()
+    {
+        var appDataRoot = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var expected = Path.Combine(appDataRoot, "dlapp");
+
+        var appDataRootMethod = typeof(YtDlpService).GetProperty("AppDataRoot", BindingFlags.NonPublic | BindingFlags.Static);
+        var actual = appDataRootMethod!.GetValue(null)!.ToString();
+
+        actual.Should().Be(expected);
+    }
+
+    [Fact]
     public void IsReady_True_WhenBothFilesExist()
     {
         var ytDlpPath = Path.Combine(_testDir, "yt-dlp.exe");
