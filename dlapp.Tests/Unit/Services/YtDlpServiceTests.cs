@@ -153,6 +153,37 @@ public class YtDlpServiceTests : IDisposable
         act.Should().ThrowAsync<InvalidOperationException>();
     }
 
+    [Fact]
+    public async Task InitializeAsync_DoesNotDownload_WhenYtDlpExists()
+    {
+        var ytDlpPath = Path.Combine(_testDir, "yt-dlp.exe");
+        var ffmpegPath = Path.Combine(_testDir, "ffmpeg.exe");
+        File.WriteAllText(ytDlpPath, "fake yt-dlp");
+        File.WriteAllText(ffmpegPath, "fake ffmpeg");
+
+        var service = CreateServiceWithPaths(ytDlpPath, ffmpegPath);
+        var messages = new List<string>();
+        var progress = new Progress<string>(msg => messages.Add(msg));
+
+        await service.InitializeAsync(progress);
+
+        service.IsReady.Should().BeTrue();
+        messages.Should().Contain("Ready.");
+    }
+
+    [Fact]
+    public void InitializeAsync_SetsIsReady_WhenBothFilesExist()
+    {
+        var ytDlpPath = Path.Combine(_testDir, "yt-dlp.exe");
+        var ffmpegPath = Path.Combine(_testDir, "ffmpeg.exe");
+        File.WriteAllText(ytDlpPath, "fake yt-dlp");
+        File.WriteAllText(ffmpegPath, "fake ffmpeg");
+
+        var service = CreateServiceWithPaths(ytDlpPath, ffmpegPath);
+
+        service.IsReady.Should().BeTrue();
+    }
+
     private static YtDlpService CreateServiceWithPaths(string ytDlpPath, string ffmpegPath)
     {
         var pathsField = typeof(YtDlpService).GetField("_ytDlpPath", BindingFlags.NonPublic | BindingFlags.Instance);

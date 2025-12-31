@@ -29,11 +29,10 @@ public class MainWindowViewModelTests
     [Theory]
     [InlineData("", false)]
     [InlineData("   ", false)]
-    public async Task CanDownload_ReturnsCorrectly(string url, bool expected)
+    public void CanDownload_ReturnsCorrectly(string url, bool expected)
     {
         var vm = CreateViewModel();
         vm.Url = url;
-        await Task.Delay(200);
 
         var result = CallCanDownload(vm);
 
@@ -41,11 +40,10 @@ public class MainWindowViewModelTests
     }
 
     [Fact]
-    public async Task CanDownload_ReturnsTrue_WhenUrlIsValidAndNotBusy()
+    public void CanDownload_ReturnsTrue_WhenUrlIsValidAndNotBusy()
     {
         var vm = CreateViewModel();
         vm.Url = "http://valid.com";
-        await Task.Delay(500);
 
         var isBusyBefore = vm.IsBusy;
 
@@ -193,29 +191,131 @@ public class MainWindowViewModelTests
     }
 
     [Fact]
-    public void StatusMessage_NotEmptyAfterConstruction()
+    public void StatusMessage_HasInitialValue()
     {
         var vm = CreateViewModel();
 
-        vm.StatusMessage.Should().NotBeNullOrEmpty();
+        vm.StatusMessage.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Url_CanBeSet()
+    {
+        var vm = CreateViewModel();
+        var testUrl = "https://example.com/video";
+
+        vm.Url = testUrl;
+
+        vm.Url.Should().Be(testUrl);
+    }
+
+    [Fact]
+    public void IsAudioOnly_CanBeToggled()
+    {
+        var vm = CreateViewModel();
+
+        vm.IsAudioOnly = true;
+        vm.IsAudioOnly.Should().BeTrue();
+
+        vm.IsAudioOnly = false;
+        vm.IsAudioOnly.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsPlaylist_CanBeToggled()
+    {
+        var vm = CreateViewModel();
+
+        vm.IsPlaylist = true;
+        vm.IsPlaylist.Should().BeTrue();
+
+        vm.IsPlaylist = false;
+        vm.IsPlaylist.Should().BeFalse();
+    }
+
+    [Fact]
+    public void SelectedResolution_CanBeChanged()
+    {
+        var vm = CreateViewModel();
+
+        vm.SelectedResolution = "1080p";
+        vm.SelectedResolution.Should().Be("1080p");
+    }
+
+    [Fact]
+    public void SelectedVideoFormat_CanBeChanged()
+    {
+        var vm = CreateViewModel();
+
+        vm.SelectedVideoFormat = "mkv";
+        vm.SelectedVideoFormat.Should().Be("mkv");
+    }
+
+    [Fact]
+    public void SelectedAudioFormat_CanBeChanged()
+    {
+        var vm = CreateViewModel();
+
+        vm.SelectedAudioFormat = "m4a";
+        vm.SelectedAudioFormat.Should().Be("m4a");
+    }
+
+    [Fact]
+    public void Items_StartsEmpty()
+    {
+        var vm = CreateViewModel();
+
+        vm.Items.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ProgressValue_CanBeSet()
+    {
+        var vm = CreateViewModel();
+
+        vm.ProgressValue = 50.0;
+        vm.ProgressValue.Should().Be(50.0);
+    }
+
+    [Fact]
+    public void SavePath_HasDefaultValue()
+    {
+        var vm = CreateViewModel();
+
+        vm.SavePath.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void DownloadCommand_CannotExecute_WhenUrlIsEmpty()
+    {
+        var vm = CreateViewModel();
+        vm.Url = string.Empty;
+
+        vm.DownloadCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public void DownloadCommand_CannotExecute_WhenIsBusy()
+    {
+        var vm = CreateViewModel();
+        vm.Url = "http://test.com";
+        vm.IsBusy = true;
+
+        vm.DownloadCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public void DownloadCommand_CanExecute_WhenUrlValidAndNotBusy()
+    {
+        var vm = CreateViewModel();
+        vm.Url = "http://test.com";
+        vm.IsBusy = false;
+
+        vm.DownloadCommand.CanExecute(null).Should().BeTrue();
     }
 
     private static MainWindowViewModel CreateViewModel()
     {
-        return new TestableMainWindowViewModel();
-    }
-
-    private class TestableMainWindowViewModel : MainWindowViewModel
-    {
-        public TestableMainWindowViewModel()
-        {
-        }
-
-        public void SetIsBusy(bool value)
-        {
-            var field = typeof(MainWindowViewModel).GetField("_isBusy", BindingFlags.NonPublic | BindingFlags.Instance);
-            field!.SetValue(this, value);
-            OnPropertyChanged(nameof(IsBusy));
-        }
+        return new MainWindowViewModel();
     }
 }

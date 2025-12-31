@@ -124,10 +124,8 @@ namespace dlapp.Services
             var psi = new ProcessStartInfo
             {
                 FileName = _ytDlpPath,
-                // If user marked as playlist, enumerate entries; otherwise force single video info only.
                 Arguments = isPlaylist
                     ? $"{baseInfoArgs} --flat-playlist --print \"%(playlist_index)s|%(title)s\" \"{url}\""
-                    // extra guards: cap playlist-like URLs to a single item even if yt-dlp still detects a playlist/mix
                     : $"{baseInfoArgs} --no-playlist --playlist-items 1 --max-downloads 1 --print \"%(title)s\" \"{url}\"",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
@@ -136,8 +134,14 @@ namespace dlapp.Services
                 StandardOutputEncoding = System.Text.Encoding.UTF8
             };
 
-            using var process = new Process { StartInfo = psi };
-            process.Start();
+            var processResult = await Task.Run(() =>
+            {
+                using var process = new Process { StartInfo = psi };
+                process.Start();
+                return process;
+            }, cancellationToken).ConfigureAwait(false);
+
+            using var process = processResult;
 
             var errorTask = process.StandardError.ReadToEndAsync();
 
@@ -167,7 +171,6 @@ namespace dlapp.Services
                 }
                 else
                 {
-                    // Single video: only keep the first title to avoid showing multiple phantom entries
                     if (!addedSingle)
                     {
                         items.Add(("1", line.Trim()));
@@ -180,8 +183,6 @@ namespace dlapp.Services
             await process.WaitForExitAsync(cancellationToken);
             await errorTask;
 
-            // Defensive: for non-playlist requests, we only ever want a single item.
-            // Some URLs can still emit multiple lines (e.g., mixes/feeds); collapse to the first.
             if (!isPlaylist && items.Count > 1)
             {
                 return new List<(string Index, string Title)> { items[0] };
@@ -237,38 +238,35 @@ namespace dlapp.Services
                 WorkingDirectory = savePath
             };
 
-            using var process = new Process { StartInfo = psi };
-
-            process.OutputDataReceived += (sender, e) =>
+            await Task.Run(() =>
             {
-                if (!string.IsNullOrEmpty(e.Data))
+                using var process = new Process { StartInfo = psi };
+
+                process.OutputDataReceived += (sender, e) =>
                 {
-                    // Try parse progress
-                    // Default percentage looks like " 5.5%" or "100.0%"
-                    var data = e.Data.Trim();
-                    // Handle ANSI codes if any (yt-dlp might output them even with no-color?)
-                    // With --progress-template, we just get the percentage string
-
-                    if (data.EndsWith("%") && double.TryParse(data.TrimEnd('%'), out double p))
+                    if (!string.IsNullOrEmpty(e.Data))
                     {
-                        progressCallback.Report(p);
+                        var data = e.Data.Trim();
+                        if (data.EndsWith("%") && double.TryParse(data.TrimEnd('%'), out double p))
+                        {
+                            progressCallback.Report(p);
+                        }
+                        else
+                        {
+                            outputCallback.Report(e.Data);
+                        }
                     }
-                    else
-                    {
-                        outputCallback.Report(e.Data);
-                    }
-                }
-            };
-            process.ErrorDataReceived += (sender, e) =>
-            {
-                // yt-dlp sends some info to stderr
-                if (!string.IsNullOrEmpty(e.Data)) outputCallback.Report(e.Data);
-            };
+                };
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data)) outputCallback.Report(e.Data);
+                };
 
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            await process.WaitForExitAsync(cancellationToken);
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+                process.WaitForExit();
+            }, cancellationToken).ConfigureAwait(false);
         }
     }
 }

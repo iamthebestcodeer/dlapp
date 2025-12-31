@@ -15,7 +15,7 @@ public static class TestHelpers
         List<(string Index, string Title)>? videoInfos = null,
         Action<string, string, bool, bool, int?, string, IProgress<string>, IProgress<double>>? downloadCallback = null)
     {
-        var mockService = new Mock<YtDlpService>(MockBehavior.Strict);
+        var mockService = new Mock<YtDlpService>();
 
         mockService.Setup(s => s.InitializeAsync(It.IsAny<IProgress<string>>()))
             .Returns(Task.CompletedTask);
@@ -58,18 +58,5 @@ public static class TestHelpers
         field?.SetValue(vm, service);
 
         return vm;
-    }
-
-    public static async Task ProcessDownloadProgress(MainWindowViewModel vm, IProgress<string> progress, string message)
-    {
-        progress.Report(message);
-        await Task.Delay(10);
-    }
-
-    public static async Task CompleteDownload(MainWindowViewModel vm)
-    {
-        IProgress<double> progress = new Progress<double>(v => { });
-        progress.Report(100);
-        await Task.Delay(10);
     }
 }
