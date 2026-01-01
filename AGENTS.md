@@ -1,6 +1,6 @@
 # AGENTS.md
 
-dlapp is a .NET 9.0 Avalonia UI desktop app for video downloading via yt-dlp.
+dlapp is a .NET 9.0 Avalonia UI desktop app for video downloading via yt-dlp. The year is 2026
 
 ## Key Technologies
 - .NET 9.0, C# 12+, Avalonia UI 11.3.9, CommunityToolkit.Mvvm 8.2.1
@@ -19,8 +19,8 @@ dotnet publish -c Release -o release/win-x64  # Windows publish
 
 ```bash
 dotnet test                                      # All tests
-dotnet test --filter "FullyQualifiedName~MainWindowViewModelTests"  # Test class
-dotnet test --filter "FullyQualifiedName~VideoItemTests.Constructor_InitializesWithDefaults"  # Single test
+dotnet test --filter "FullyQualifiedName~YtDlpServiceTests"  # Test class
+dotnet test --filter "FullyQualifiedName~YtDlpServiceTests.IsReady_True"  # Single test
 dotnet test --verbosity normal                   # Verbose output
 ```
 
@@ -104,19 +104,6 @@ var field = typeof(MainWindowViewModel).GetField("_ytDlpService",
 field!.SetValue(vm, mockService.Object);
 ```
 
-## Coverage Status
-| Class | Coverage |
-|-------|----------|
-| `VideoItem` | 100% |
-| `YtDlpService` | 23% |
-| `MainWindowViewModel` | 21% |
-| `MainWindow` | 0% (excluded - UI glue) |
-| `App` | 0% (excluded - app lifecycle) |
-| `Program` | 0% (excluded - boilerplate) |
-| `ViewLocator` | 0% (excluded - XAML glue) |
-
-**Overall: 15.3%** (Target: 80% on business logic classes)
-
 ## Avalonia
 - Use compiled bindings (`x:DataType`)
 - `ObservableCollection<T>` for dynamic collections
@@ -125,37 +112,26 @@ field!.SetValue(vm, mockService.Object);
 ## Git
 - Concise commit messages
 - Run tests before commit: `dotnet test --no-build`
+- **Ignored Files**: `reports/` and `coverage-report/`
 
-## Testing Pitfalls to Avoid
+## Testing Pitfalls
 
 ### Mocking Non-Virtual/Non-Interface Methods
 Moq cannot mock non-virtual methods or methods on concrete classes without interfaces. Before writing tests that mock a service:
 1. Check if the service has an interface (e.g., `IYtDlpService`)
-2. If not, either create one or use a different testing approach (integration tests with real implementation)
-3. Don't waste time trying to mock non-mockable methods - the test will fail with `NotSupportedException`
+2. If not, either create one or use a different testing approach
 
 ### Avoid Arbitrary Task.Delay in Tests
-Never use `Task.Delay()` to wait for async operations to complete. This is a code smell:
-- The delays are arbitrary and may be too short or too long
-- Tests become slow and flaky
+Never use `Task.Delay()` to wait for async operations. Instead:
+- Test synchronous operations synchronously (no await)
+- For async operations, `await` the actual operation
+- Verify result state directly
 
-Instead:
-- For synchronous operations, test synchronously (no await)
-- For truly async operations, use `await` on the actual operation
-- If you must wait for background work, verify the result state directly
-
-### Test Initial Values Precisely
-When testing initial/default values, be aware of:
-- Constructor initializers vs values set by async `InitializeAsync()` calls
-- The `MainWindowViewModel` constructor starts async initialization that changes `StatusMessage` from "Initializing..." to "Checking for updates..."
-- Test the actual initial value, not the post-initialization value
-
-### MockBehavior.Strict Consistency
-If using `MockBehavior.Strict`, ensure ALL method calls are explicitly set up. Otherwise:
-- Unsetup calls will throw `MockException`
-- If you need loose behavior, use default `MockBehavior.Loose` or don't specify strict mode
+### Test Initial Values
+Constructor initializers vs async `InitializeAsync()` calls may differ. Test the actual initial value, not the post-initialization value.
 
 ### Remove Unused Test Code
-- Delete unused helper methods, test fixtures, and subclasses
-- `TestableMainWindowViewModel` subclasses that don't add test functionality should be removed
-- Unused `using` statements will cause compile errors after file modifications
+Delete unused helper methods, test fixtures, and subclasses. Unused `using` statements cause compile errors after file modifications.
+
+###
+The user is not a programmer, you need to explain things very simply to him.
