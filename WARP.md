@@ -64,3 +64,4 @@ Currently, the project does not use a Dependency Injection (DI) container.
 # Development Guidelines
 - **Avalonia & CommunityToolkit**: Note that `App.axaml.cs` contains logic to disable Avalonia's native data annotation validation (`DisableAvaloniaDataAnnotationValidation`) to avoid conflicts with CommunityToolkit's validation.
 - **Compiled Bindings**: `AvaloniaUseCompiledBindingsByDefault` is enabled in the `.csproj`. Ensure bindings are correct to avoid build-time errors.
+- **Ignored Artifacts**: `reports/` and `coverage-report/` directories are configured in `.gitignore` to exclude local report generation artifacts.

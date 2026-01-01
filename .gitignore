@@ -199,3 +199,7 @@ yarn-error.log*
 
 # Publish directory
 publish/
+
+# Reports and coverage
+reports/
+coverage-report/

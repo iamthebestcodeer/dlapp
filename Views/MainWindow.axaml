@@ -3,189 +3,143 @@
         xmlns:vm="using:dlapp.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="350"
+        mc:Ignorable="d" d:DesignWidth="720" d:DesignHeight="520"
         x:Class="dlapp.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/logo.png"
-        Title="DL App"
-        Width="800" Height="500"
+        Title="KAMO Video Downloader"
+        Width="720" Height="520"
+        MinWidth="640" MinHeight="480"
         WindowStartupLocation="CenterScreen"
-        CanResize="True"
-        ExtendClientAreaToDecorationsHint="True">
-    
+        Background="{StaticResource Background}">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <Panel>
-        <Panel.Background>
-            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                <GradientStop Offset="0" Color="#0F0F12"/>
-                <GradientStop Offset="1" Color="#1B1B22"/>
-            </LinearGradientBrush>
-        </Panel.Background>
+    <Grid RowDefinitions="Auto,*,Auto" Margin="24">
 
-        <Grid ColumnDefinitions="250,*">
-            
-            <!-- Left Panel: Branding -->
-            <Border Grid.Column="0" Background="#08080A" BorderBrush="#222222" BorderThickness="0,0,1,0">
-                <Grid RowDefinitions="*,Auto" Margin="30">
-                    <StackPanel VerticalAlignment="Center" Spacing="0">
-                        <TextBlock Text="YOUTUBE" 
-                                   FontSize="28" 
-                                   FontWeight="Heavy" 
-                                   Foreground="White"
-                                   LetterSpacing="2"/>
-                        <TextBlock Text="DL" 
-                                   FontSize="72" 
-                                   FontWeight="Black" 
-                                   Foreground="#CCFF00"
-                                   LineHeight="60"
-                                   Margin="-4,-10,0,0"/>
-                        <TextBlock Text="APP" 
-                                   FontSize="72" 
-                                   FontWeight="Black" 
-                                   Foreground="#333333"
-                                   LineHeight="60"
-                                   Margin="-4,-20,0,0"/>
-                    </StackPanel>
-                    
-                    <TextBlock Grid.Row="1" 
-                               Text="v1.0.0" 
-                               FontSize="12" 
-                               Foreground="#444444"
-                               FontFamily="Consolas"/>
-                </Grid>
-            </Border>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12">
+            <Image Source="/Assets/logo.png" Width="32" Height="32"/>
+            <TextBlock Text="KAMO" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+            <TextBlock Text="Video Downloader" FontSize="14" VerticalAlignment="Center" Foreground="{StaticResource TextSecondary}"/>
+            <Rectangle/>
+            <TextBlock Text="v1.0.0" FontSize="11" VerticalAlignment="Center" Foreground="{StaticResource TextTertiary}"/>
+        </StackPanel>
 
-            <!-- Right Panel: Controls -->
-            <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto" Margin="40">
-                <StackPanel Grid.Row="0" Spacing="20">
-                    
-                    <!-- URL Input -->
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="TARGET URL" FontSize="10" FontWeight="Bold" Foreground="#666666" LetterSpacing="1"/>
-                        <TextBox Text="{Binding Url}" 
-                                 Watermark="https://youtube.com/watch?v=..." 
-                                 UseFloatingWatermark="False"
-                                 IsEnabled="{Binding !IsBusy}"/>
-                    </StackPanel>
+        <Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" Margin="0,24">
 
-                    <!-- Save Path Input -->
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="OUTPUT DIRECTORY" FontSize="10" FontWeight="Bold" Foreground="#666666" LetterSpacing="1"/>
-                        <Grid ColumnDefinitions="*, Auto">
-                            <TextBox Text="{Binding SavePath}" 
-                                     IsReadOnly="True" 
-                                     Watermark="Select folder..."
-                                     IsEnabled="{Binding !IsBusy}"/>
-                            <Button Grid.Column="1" 
-                                    Classes="secondary"
-                                    Content="..." 
-                                    Command="{Binding SelectSavePathCommand}"
-                                    Margin="10,0,0,0"
-                                    IsEnabled="{Binding !IsBusy}"/>
-                        </Grid>
-                    </StackPanel>
+            <StackPanel Grid.Row="0" Spacing="6">
+                <TextBlock Text="URL" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                <TextBox Text="{Binding Url}"
+                         Watermark="https://youtube.com/watch?v=..."
+                         UseFloatingWatermark="False"
+                         IsEnabled="{Binding !IsBusy}"/>
+            </StackPanel>
 
-                    <!-- Format Selection -->
-                    <StackPanel Orientation="Horizontal" Spacing="20" Margin="0,10">
-                        <RadioButton GroupName="Format" Content="VIDEO + AUDIO" 
-                                     IsChecked="{Binding !IsAudioOnly}"
-                                     IsEnabled="{Binding !IsBusy}"/>
-                        <RadioButton GroupName="Format" Content="AUDIO ONLY" 
-                                     IsChecked="{Binding IsAudioOnly}"
-                                     IsEnabled="{Binding !IsBusy}"/>
-                        <CheckBox Content="PLAYLIST" 
-                                  IsChecked="{Binding IsPlaylist}"
-                                  IsEnabled="{Binding !IsBusy}"/>
-                    </StackPanel>
-
-                    <!-- Quality & Container -->
-                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto" Margin="0,0,0,10">
-                        <!-- Resolution (Video Only) -->
-                        <StackPanel Grid.Column="0" Spacing="8" Margin="0,0,10,0" IsVisible="{Binding !IsAudioOnly}">
-                            <TextBlock Text="RESOLUTION" FontSize="10" FontWeight="Bold" Foreground="#666666" LetterSpacing="1"/>
-                            <ComboBox ItemsSource="{Binding Resolutions}"
-                                      SelectedItem="{Binding SelectedResolution}"
-                                      HorizontalAlignment="Stretch"
-                                      IsEnabled="{Binding !IsBusy}"/>
-                        </StackPanel>
-
-                        <!-- Format (Video) -->
-                        <StackPanel Grid.Column="1" Spacing="8" IsVisible="{Binding !IsAudioOnly}">
-                            <TextBlock Text="FORMAT" FontSize="10" FontWeight="Bold" Foreground="#666666" LetterSpacing="1"/>
-                            <ComboBox ItemsSource="{Binding VideoFormats}"
-                                      SelectedItem="{Binding SelectedVideoFormat}"
-                                      HorizontalAlignment="Stretch"
-                                      IsEnabled="{Binding !IsBusy}"/>
-                        </StackPanel>
-
-                        <!-- Format (Audio) -->
-                        <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Spacing="8" IsVisible="{Binding IsAudioOnly}">
-                            <TextBlock Text="AUDIO FORMAT" FontSize="10" FontWeight="Bold" Foreground="#666666" LetterSpacing="1"/>
-                            <ComboBox ItemsSource="{Binding AudioFormats}"
-                                      SelectedItem="{Binding SelectedAudioFormat}"
-                                      HorizontalAlignment="Stretch"
-                                      IsEnabled="{Binding !IsBusy}"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <!-- Action Button -->
-                    <Button Classes="primary"
-                            Content="INITIATE DOWNLOAD" 
-                            Command="{Binding DownloadCommand}"
-                            HorizontalAlignment="Stretch" 
-                            HorizontalContentAlignment="Center"
+            <StackPanel Grid.Row="1" Spacing="6" Margin="0,16">
+                <TextBlock Text="SAVE TO" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0"
+                             Text="{Binding SavePath}"
+                             IsReadOnly="True"
+                             Watermark="Select folder..."
+                             IsEnabled="{Binding !IsBusy}"/>
+                    <Button Grid.Column="1"
+                            Classes="secondary"
+                            Content="Browse"
+                            Command="{Binding SelectSavePathCommand}"
+                            Margin="8,0,0,0"
                             IsEnabled="{Binding !IsBusy}"/>
+                </Grid>
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" Spacing="6" Margin="0,8">
+                <TextBlock Text="MODE" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                <StackPanel Orientation="Horizontal" Spacing="16">
+                    <RadioButton GroupName="Format" Content="Video + Audio"
+                                 IsChecked="{Binding !IsAudioOnly}"
+                                 IsEnabled="{Binding !IsBusy}"/>
+                    <RadioButton GroupName="Format" Content="Audio Only"
+                                 IsChecked="{Binding IsAudioOnly}"
+                                 IsEnabled="{Binding !IsBusy}"/>
                 </StackPanel>
+                <CheckBox Content="Playlist"
+                          IsChecked="{Binding IsPlaylist}"
+                          IsEnabled="{Binding !IsBusy}"
+                          Margin="0,4"/>
+            </StackPanel>
 
-                <!-- Log List -->
-                <Border Grid.Row="1" Margin="0,20" Background="#0A0A0A" CornerRadius="4" BorderBrush="#222" BorderThickness="1">
-                    <ListBox ItemsSource="{Binding Items}" 
-                             Background="Transparent" 
-                             Padding="5">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Grid ColumnDefinitions="30,*,Auto" Margin="0,4">
-                                    <TextBlock Text="{Binding Index}" Foreground="#444" VerticalAlignment="Center" FontFamily="Consolas"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding Title}" Foreground="#DDD" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="10,0"/>
-                                    <Border Grid.Column="2" CornerRadius="3" Padding="6,2" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Status}" FontSize="10" FontWeight="Bold">
-                                            <TextBlock.Styles>
-                                                <Style Selector="TextBlock[Text=Pending]">
-                                                    <Setter Property="Foreground" Value="#666"/>
-                                                </Style>
-                                                <Style Selector="TextBlock[Text=Downloading...]">
-                                                    <Setter Property="Foreground" Value="#FFCC00"/>
-                                                </Style>
-                                                <Style Selector="TextBlock[Text=Completed]">
-                                                    <Setter Property="Foreground" Value="#00FF00"/>
-                                                </Style>
-                                            </TextBlock.Styles>
-                                        </TextBlock>
-                                    </Border>
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </Border>
-
-                <!-- Status Overlay / Bottom Bar -->
-                <StackPanel Grid.Row="2" Spacing="10" VerticalAlignment="Bottom">
-                    <ProgressBar Value="{Binding ProgressValue}" 
-                                 Maximum="100" 
-                                 Height="2"
-                                 IsVisible="{Binding IsBusy}"/>
-                    
-                    <TextBlock Text="{Binding StatusMessage}" 
-                               FontSize="11" 
-                               Foreground="#888888" 
-                               HorizontalAlignment="Center"
-                               TextTrimming="CharacterEllipsis"/>
+            <Grid Grid.Row="3" ColumnDefinitions="*,*" Margin="0,16">
+                <StackPanel Grid.Column="0" Spacing="6">
+                    <TextBlock Text="QUALITY" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                    <ComboBox ItemsSource="{Binding Resolutions}"
+                              SelectedItem="{Binding SelectedResolution}"
+                              IsEnabled="{Binding !IsBusy}"
+                              IsVisible="{Binding !IsAudioOnly}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="6">
+                    <TextBlock Text="FORMAT" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                    <ComboBox ItemsSource="{Binding VideoFormats}"
+                              SelectedItem="{Binding SelectedVideoFormat}"
+                              IsEnabled="{Binding !IsBusy}"
+                              IsVisible="{Binding !IsAudioOnly}"/>
                 </StackPanel>
             </Grid>
+
+            <StackPanel Grid.Row="4" Spacing="6" Margin="0,16" IsVisible="{Binding IsAudioOnly}">
+                <TextBlock Text="FORMAT" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                <ComboBox ItemsSource="{Binding AudioFormats}"
+                          SelectedItem="{Binding SelectedAudioFormat}"
+                          IsEnabled="{Binding !IsBusy}"/>
+            </StackPanel>
+
+            <Button Grid.Row="5"
+                    Classes="primary"
+                    Content="DOWNLOAD"
+                    Command="{Binding DownloadCommand}"
+                    Margin="0,8"
+                    IsEnabled="{Binding !IsBusy}"/>
+
+            <Border Grid.Row="5" Margin="0,16" Background="{StaticResource Surface}" CornerRadius="8">
+                <ListBox ItemsSource="{Binding Items}"
+                         Background="Transparent"
+                         Padding="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="30,*,Auto" Margin="12,10">
+                                <TextBlock Text="{Binding Index}" Foreground="{StaticResource TextTertiary}" VerticalAlignment="Center" FontFamily="{StaticResource FontMonospace}" FontSize="12"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Title}" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="10,0"/>
+                                <TextBlock Grid.Column="2" Text="{Binding Status}" FontSize="11" FontWeight="500" VerticalAlignment="Center">
+                                    <TextBlock.Styles>
+                                        <Style Selector="TextBlock[Text=Pending]">
+                                            <Setter Property="Foreground" Value="{StaticResource TextTertiary}"/>
+                                        </Style>
+                                        <Style Selector="TextBlock[Text=Downloading...]">
+                                            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+                                        </Style>
+                                        <Style Selector="TextBlock[Text=Completed]">
+                                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                                        </Style>
+                                    </TextBlock.Styles>
+                                </TextBlock>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
         </Grid>
-    </Panel>
+
+        <StackPanel Grid.Row="2" Spacing="4">
+            <ProgressBar Value="{Binding ProgressValue}"
+                         Maximum="100"
+                         Height="3"
+                         IsVisible="{Binding IsBusy}"/>
+            <TextBlock Text="{Binding StatusMessage}"
+                       FontSize="11"
+                       Foreground="{StaticResource TextSecondary}"
+                       HorizontalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"/>
+        </StackPanel>
+    </Grid>
 </Window>
